@@ -1,70 +1,83 @@
-# Getting Started with Create React App
+# Flight Tracker
+A react app using [Leaflet](https://react-leaflet.js.org/) to visualize publicly available flight data provided by [OpenSky REST API](https://openskynetwork.github.io/opensky-api/rest.html)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Flights](https://github.com/isaacjacques/flight-tracker/assets/137218652/b7561832-2451-4be2-b6d0-2f106ac316a1)
 
-## Available Scripts
+![FlightPopul](https://github.com/isaacjacques/flight-tracker/assets/137218652/d224620e-d72f-41ce-ac71-97c7053b66de)
 
-In the project directory, you can run:
+## How it works
+The app fetches data from the OpenSky API every 10 seconds (see API [Limitations](https://openskynetwork.github.io/opensky-api/rest.html#limitations)).
+```js
+    useEffect(() => {
+        fetchFlights();
+        setCurrentBounds(map.getBounds());
+        const intervalId = setInterval(fetchFlights, 10000);
+        return () => clearInterval(intervalId);
+    }, []);
+```
 
-### `npm start`
+Using the map events leaflet hooks, the map boundaries are stored when users finish paning or zooming.
+```js
+const map = useMapEvents({
+    moveend: () => {
+        setCurrentBounds(map.getBounds());
+    },
+})
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This allows for some optimization by only creating map markers for flights positioned within the bounds of the map.
+This hook is triggered by a change to the stored map boundry OR the raw flight data fetched every 10 seconds.
+```js
+useEffect(() => {
+    if (flights?.length){
+        
+        const flightsWithinBounds = flights.filter((flight) => {
+            if (!currentBounds || !flight[5] || !flight[6]) {
+                return false;
+            }
+            return currentBounds.contains([flight[6],flight[5]]);
+        });
+        setFlightsDisplayed(flightsWithinBounds);
+    }
+}, [currentBounds, flights]);
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Each marker contains a leaflet popup component which is triggered by selecting the flight.
+The popup displays information such as the Callsign, Origin country, Altitude etc.
+```js
+return(
+    <>
+        {flightsDisplayed.map((flight) => (
+            <Marker 
+                key = {flight[0]} 
+                position={[flight[6], flight[5]]} 
+                icon={flightIcon}
+            >
+                <Popup autoClose={true}>
+                    <div>
+                        <p><strong>ICAO24: </strong>{flight[0]}</p>
+                        <p><strong>Callsign: </strong>{flight[1]}</p>
+                        <p><strong>Origin: </strong>{flight[2]}</p>
+                        <p><strong>Position: </strong>{flight[6]}, {flight[5]}</p>
+                        <p><strong>Altitude: </strong>{flight[7] ? flight[7] : 0}</p>
+                        <p><strong>Velocity: </strong>{flight[9]}</p>
+                    </div>
+                </Popup>
+            </Marker>
+        ))}
+    </>
+);
+```
 
-### `npm test`
+## Technologies Used
+* VS Code
+* React
+  * react-leaflet
+  * axios
+  * react-icons
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Authors
+* **Isaac Jacques** - *Initial work* - [isaacjacques](https://isaacjacques.com)
+ 
+## License
+This project is licensed under the terms of the MIT license, see LICENSE.
