@@ -1,7 +1,6 @@
 {
-  "name": "flight-tracker",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@isaacjacques/flight-tracker",
+  "version": "0.1.4",
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^5.17.0",
@@ -39,5 +38,18 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "src/FlightMapContainer.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isaacjacques/flight-tracker.git"
+  },
+  "author": "Isaac Jacques",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/isaacjacques/flight-tracker/issues"
+  },
+  "homepage": "https://github.com/isaacjacques/flight-tracker#readme"
 }
